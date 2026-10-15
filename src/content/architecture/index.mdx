@@ -1,0 +1,105 @@
+# Arquitectura del Ecosistema Belentani
+
+## Visión General
+
+El ecosistema Belentani está compuesto por **8 proyectos flagship** que comparten infraestructura común: Design System, template Python, servidores MCP, y portal de documentación unificado.
+
+## Principios Arquitectónicos
+
+### 1. Clean Architecture (Backend)
+- **Dominio independiente**: Sin dependencias de frameworks
+- **Adaptadores intercambiables**: DB, HTTP, Queue, Auth
+- **Contratos explícitos**: Protocolos Python para puertos
+- **Fallos controlados**: Errores como valores, no excepciones
+
+### 2. Design System First (Frontend)
+- **Tokens centralizados**: Colores, spacing, motion, shadows
+- **Componentes compuestos**: Card, Dialog, Select, DropdownMenu
+- **Accesibilidad nativa**: Radix UI primitives
+- **Dark/Light mode**: CSS custom properties
+
+### 3. Observabilidad por Diseño
+- **OpenTelemetry**: Tracing, métricas, logs estructurados
+- **Health checks**: /health, /ready en todos los servicios
+- **Rate limiting**: Por IP, configurable por endpoint
+
+## Proyectos Flagship
+
+| Proyecto | Tipo | Stack Principal | Estado |
+|----------|------|-----------------|--------|
+| Manos Abiertas | Edu/IA | Next.js 16, Prisma, Tailwind 4 | ✅ CI verde |
+| LinguaForge | Idiomas | Vite, tRPC, Drizzle, MySQL | ✅ CI verde |
+| Belentani.es | Artístico | Next.js 14, R3F, GSAP | 🟡 CI en progreso |
+| Cruzando el Charco | Social | Static HTML/JS, Playwright | ✅ CI verde |
+| Secure T | Edu/Seguridad | Static + SPA, pytest/vitest | 🟡 CI en progreso |
+| Open School | Edu | React 19, Vite, Wouter, Drizzle | 🟡 CI en progreso |
+| Judas Experience | Artístico | Three.js, ES Modules | ✅ CI verde |
+| Belentani.cv-ai | IA/Tools | Next.js 16, Prisma, Zod | 🔴 Fix en PR |
+
+## Infraestructura Compartida
+
+### Design System (@belentani/ui)
+- **Tokens**: Verde positivo (#39D98A), spacing 4px, motion, shadows
+- **Componentes**: Button, Card, Input, Toast, Badge, Avatar, Select, Dialog, DropdownMenu
+- **Testing**: Vitest + Testing Library
+- **Storybook**: Documentación visual
+
+### Python Template (belentani-python-template)
+- **Stack**: FastAPI, Pydantic v2, SQLModel, uv, Ruff, pytest
+- **Arquitectura**: Clean Architecture con Protocol
+- **Auth**: JWT + scopes, rate limiting
+- **Observabilidad**: OpenTelemetry, Sentry opcional
+
+### MCP Servers (belentani-mcp-servers)
+| Servidor | Herramientas | Propósito |
+|----------|--------------|-----------|
+| audit | 5 | Auditoría repos, branch protection, security scan |
+| deploy | 8 | Vercel management, GitHub sync, health checks |
+| data | 6 | DuckDB analytics, GitHub ingestion, contributor stats |
+| design-system | 6 | Tokens, components, usage validation |
+
+### Documentación (belentani-docs)
+- **Starlight + Astro 5**: Portal unificado
+- **Sidebar**: 8 proyectos, Design System, Python, API, Guías, MCP
+- **Tema**: Verde positivo, badges, project cards
+
+## Flujos de Datos
+
+### CI/CD Pipeline
+```
+push/main → GitHub Actions → lint → typecheck → test → build → deploy preview → review → merge → deploy prod
+```
+
+### Deploy Strategy
+- **Vercel**: Frontend (Next.js, Vite, Static)
+- **Railway/Fly.io**: Backend APIs (FastAPI)
+- **GitHub Pages**: Static sites (Cruzando, Secure T)
+
+### Branch Protection
+- Requerido: build, typecheck, test, lint
+- 1 approval mínimo
+- Linear history
+- Admin enforcement
+
+## Seguridad
+
+- **Gitleaks**: En todos los repos
+- **Dependabot**: Grouped updates, major ignores
+- **CODEOWNERS**: @belentani7 review required
+- **Secrets**: Solo en Vercel/GitHub secrets, nunca en repo
+- **Rate limiting**: Middleware configurable
+
+## Observabilidad
+
+- **Structlog**: JSON logs estructurados
+- **OpenTelemetry**: Tracing distribuido
+- **Health endpoints**: /health, /ready
+- **Metrics**: Prometheus-ready
+
+## Próximos Pasos
+
+1. **Integración Design System**: 4 flagships
+2. **Migración Python**: 3 backends
+3. **MCP a producción**: Docker + Railway
+4. **Docs deploy**: docs.belentani.com
+5. **Lighthouse 95+**: Todos los flagships
