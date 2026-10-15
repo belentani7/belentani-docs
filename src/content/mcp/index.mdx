@@ -1,0 +1,211 @@
+# MCP Servers — Servidores Model Context Protocol
+
+## Visión General
+
+Los **MCP Servers** exponen herramientas del ecosistema Belentani para ser consumidas por LLMs y agentes autónomos via protocolo estándar.
+
+## Servidores Disponibles
+
+| Servidor | Puerto | Herramientas | Descripción |
+|----------|--------|--------------|-------------|
+| **audit** | 3001 | 5 | Auditoría de repos, branch protection, security scan |
+| **deploy** | 3002 | 8 | Vercel management, GitHub sync, health checks |
+| **data** | 3003 | 6 | DuckDB analytics, GitHub ingestion, contributor stats |
+| **design-system** | 3004 | 6 | Tokens, components, usage validation, boilerplate |
+
+## Instalación y Ejecución
+
+```bash
+# Clonar repo
+git clone https://github.com/belentani7/belentani-mcp-servers
+cd belentani-mcp-servers
+
+# Instalar dependencias
+pnpm install
+
+# Configurar variables de entorno
+cp .env.example .env
+# Editar .env con GITHUB_TOKEN, VERCEL_TOKEN
+
+# Ejecutar servidor específico
+pnpm dev:audit      # Puerto 3001
+pnpm dev:deploy     # Puerto 3002
+pnpm dev:data       # Puerto 3003
+pnpm dev:design-system  # Puerto 3004
+
+# O todos concurrentemente
+pnpm dev:all
+```
+
+## Variables de Entorno
+
+```env
+# Requeridas
+GITHUB_TOKEN=ghp_xxxxxxxxxxxx
+VERCEL_TOKEN=xxxxxxxxxxxx
+
+# Opcionales
+LOG_LEVEL=info
+DUCKDB_PATH=:memory:
+```
+
+## Uso con Claude Code / Cursor / VS Code
+
+### Configuración MCP (claude_desktop_config.json)
+
+```json
+{
+  "mcpServers": {
+    "belentani-audit": {
+      "command": "tsx",
+      "args": ["servers/audit/src/index.ts"],
+      "env": { "GITHUB_TOKEN": "YOUR_GITHUB_TOKEN" }
+    },
+    "belentani-deploy": {
+      "command": "tsx",
+      "args": ["servers/deploy/src/index.ts"],
+      "env": { "GITHUB_TOKEN": "YOUR_GITHUB_TOKEN", "VERCEL_TOKEN": "YOUR_VERCEL_TOKEN" }
+    },
+    "belentani-data": {
+      "command": "tsx",
+      "args": ["servers/data/src/index.ts"],
+      "env": { "GITHUB_TOKEN": "YOUR_GITHUB_TOKEN" }
+    },
+    "belentani-design-system": {
+      "command": "tsx",
+      "args": ["servers/design-system/src/index.ts"],
+      "env": { "GITHUB_TOKEN": "YOUR_GITHUB_TOKEN" }
+    }
+  }
+}
+```
+
+## Herramientas por Servidor
+
+### Audit Server (puerto 3001)
+
+| Herramienta | Descripción | Parámetros |
+|-------------|-------------|------------|
+| list_repos | Lista todos los repos con métricas de salud | include_private, per_page |
+| audit_repo | Auditoría completa de un repo | repo, include_workflows, include_deployments |
+| check_branch_protection | Verifica reglas de protección en main | repo |
+| get_deployment_status | Estado de despliegues Vercel | repo |
+| run_security_scan | Escaneo gitleaks, dependabot, codeql | repo |
+
+### Deploy Server (puerto 3002)
+
+| Herramienta | Descripción | Parámetros |
+|-------------|-------------|------------|
+| list_vercel_projects | Lista proyectos Vercel con último deploy | - |
+| get_project_deployments | Despliegues recientes de un proyecto | project_id, limit |
+| sync_vercel_github | Sincroniza Vercel con rama GitHub | project_id, github_repo, branch |
+| create_preview_deployment | Crea preview deployment para PR | project_id, github_pr_number, github_repo |
+| promote_to_production | Promueve preview a producción | deployment_id |
+| verify_deployment_health | Verifica health checks | url, check_endpoints |
+| set_branch_protection | Configura branch protection GitHub | repo, branch, required_checks |
+| rollback_deployment | Rollback a deployment anterior | project_id, target_deployment_id |
+
+### Data Server (puerto 3003)
+
+| Herramienta | Descripción | Parámetros |
+|-------------|-------------|------------|
+| ingest_github_data | Ingiere datos GitHub a DuckDB | since_days, include_private |
+| query_analytics | Ejecuta SQL en datos ingeridos | sql |
+| get_commit_frequency | Frecuencia commits por repo | repo, granularity |
+| get_contributor_stats | Stats de contribuidores | since_days |
+| get_issue_pr_metrics | Métricas issues/PRs | repo, since_days |
+| export_analytics | Exporta a CSV/JSON | format, query |
+
+### Design System Server (puerto 3004)
+
+| Herramienta | Descripción | Parámetros |
+|-------------|-------------|------------|
+| get_design_tokens | Tokens en CSS/JSON/SCSS | format |
+| list_components | Lista componentes con props | - |
+| get_component_docs | Docs de componente específico | component |
+| check_component_usage | Qué repos usan componente | component |
+| validate_token_usage | Valida uso de tokens en repo | repo |
+| generate_component_boilerplate | Genera boilerplate componente | name, variant, description |
+
+## Desarrollo
+
+### Añadir Nuevo Servidor
+
+1. Crear directorio: servers/nuevo-servidor/src/index.ts
+2. Implementar herramientas MCP
+3. Añadir script en package.json
+4. Actualizar docker-compose.yml si aplica
+
+### Testing
+
+```bash
+pnpm test          # Vitest
+pnpm test:watch    # Watch mode
+pnpm lint          # ESLint
+```
+
+### Build para Producción
+
+```bash
+pnpm build  # Compila TypeScript a dist/
+```
+
+## Despliegue
+
+### Docker Compose
+
+```yaml
+services:
+  audit:
+    build: ./servers/audit
+    ports: ["3001:3001"]
+    env_file: .env
+  
+  deploy:
+    build: ./servers/deploy
+    ports: ["3002:3002"]
+    env_file: .env
+  
+  data:
+    build: ./servers/data
+    ports: ["3003:3003"]
+    env_file: .env
+    volumes:
+      - duckdb_data:/data
+  
+  design-system:
+    build: ./servers/design-system
+    ports: ["3004:3004"]
+    env_file: .env
+
+volumes:
+  duckdb_data:
+```
+
+### Railway / Fly.io / Render
+
+Cada servidor es un servicio independiente con su propio Dockerfile.
+
+## Seguridad
+
+- **Tokens**: Solo en variables de entorno, nunca en código
+- **Permisos**: GitHub token con scopes mínimos (repo, admin:repo_hook)
+- **Rate limiting**: Implementado en cada servidor
+- **Logging**: Pino structured logging, sin datos sensibles
+
+## Monitoreo
+
+- **Health check**: GET /health en cada servidor
+- **Logs**: Pino structured JSON, nivel configurable
+- **Métricas**: Contadores de requests, latencia, errores
+
+## Contribuir
+
+1. Fork → Feature branch
+2. Añadir tests en servers/*/tests/
+3. pnpm test && pnpm lint && pnpm typecheck
+4. PR → Review → Merge
+
+## Licencia
+
+MIT — Ver LICENSE.
