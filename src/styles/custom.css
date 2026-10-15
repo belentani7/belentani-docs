@@ -1,0 +1,143 @@
+/* Belentani Docs — Custom Styles */
+:root {
+  --color-brand-primary: #39D98A;
+  --color-brand-lime: #A7F36C;
+  --color-brand-mint: #B7F7D4;
+  --color-bg-deep: #071A14;
+  --color-bg-surface: #0D2A20;
+}
+
+/* Override Starlight theme colors */
+.sl-sidebar {
+  background: var(--color-bg-surface);
+  border-right: 1px solid var(--color-bg-border);
+}
+
+.sl-header {
+  background: var(--color-bg-surface);
+  border-bottom: 1px solid var(--color-bg-border);
+}
+
+.sl-theme-light .sl-sidebar,
+.sl-theme-light .sl-header {
+  background: #FFFFFF;
+}
+
+.sl-nav-item.active {
+  background: linear-gradient(90deg, var(--color-brand-primary)/10, transparent);
+  border-left: 3px solid var(--color-brand-primary);
+}
+
+.sl-btn-primary {
+  background: var(--color-brand-primary);
+  color: var(--color-text-on-brand);
+}
+
+.sl-btn-primary:hover {
+  background: var(--color-brand-emerald);
+}
+
+.sl-code-block {
+  background: var(--color-bg-deep) !important;
+  border: 1px solid var(--color-bg-border);
+}
+
+.sl-aside {
+  background: var(--color-bg-elevated);
+  border: 1px solid var(--color-bg-border);
+}
+
+.sl-footnotes {
+  border-top: 1px solid var(--color-bg-border);
+}
+
+::selection {
+  background: var(--color-brand-primary)/30;
+}
+
+/* Custom components */
+.belentani-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.25rem 0.625rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+  border-radius: 9999px;
+  border: 1px solid;
+}
+
+.belentani-badge-green {
+  background: rgba(57, 217, 138, 0.1);
+  color: var(--color-brand-primary);
+  border-color: var(--color-brand-primary)/30;
+}
+
+.belentani-badge-yellow {
+  background: rgba(253, 230, 138, 0.1);
+  color: #FDE68A;
+  border-color: #FDE68A/30;
+}
+
+.belentani-badge-red {
+  background: rgba(255, 125, 125, 0.1);
+  color: #FF7D7D;
+  border-color: #FF7D7D/30;
+}
+
+.belentani-badge-blue {
+  background: rgba(125, 211, 252, 0.1);
+  color: #7DD3FC;
+  border-color: #7DD3FC/30;
+}
+
+/* Project cards */
+.project-card {
+  display: flex;
+  flex-direction: column;
+  padding: 1.5rem;
+  background: var(--color-bg-surface);
+  border: 1px solid var(--color-bg-border);
+  border-radius: 12px;
+  transition: all 0.3s ease;
+}
+
+.project-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.3);
+  border-color: var(--color-brand-primary)/30;
+}
+
+.project-card h3 {
+  margin: 0 0 0.5rem;
+  color: var(--color-brand-primary);
+}
+
+.project-card p {
+  flex: 1;
+  color: var(--color-text-secondary);
+  margin: 0 0 1rem;
+}
+
+.project-card .tech-stack {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.375rem;
+  margin-top: auto;
+}
+
+.tech-tag {
+  font-size: 0.625rem;
+  padding: 0.125rem 0.5rem;
+  background: var(--color-bg-elevated);
+  border: 1px solid var(--color-bg-border);
+  border-radius: 9999px;
+  color: var(--color-text-muted);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .project-grid {
+    grid-template-columns: 1fr !important;
+  }
+}
