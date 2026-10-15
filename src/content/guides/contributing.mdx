@@ -1,0 +1,206 @@
+# Guía de Contribución
+
+## Flujo de Trabajo
+
+### 1. Configuración Inicial
+
+```bash
+# Fork del repositorio
+gh repo fork belentani7/<repo> --clone
+
+# Configurar upstream
+git remote add upstream https://github.com/belentani7/<repo>
+
+# Instalar dependencias
+pnpm install  # o uv sync --all-extras para Python
+```
+
+### 2. Crear Rama
+
+```bash
+git checkout main
+git pull upstream main
+git checkout -b feat/nueva-funcionalidad
+# o fix/correccion-bug, docs/actualizacion-docs, chore/actualizacion-deps
+```
+
+### 3. Desarrollar
+
+- Escribe tests **antes** de implementar (TDD)
+- Sigue las convenciones de código del proyecto
+- Ejecuta validaciones locales antes de commit
+
+```bash
+# Frontend
+pnpm lint && pnpm typecheck && pnpm test
+
+# Backend
+uv run ruff check . --fix && uv run ruff format . && uv run mypy src/ && uv run pytest
+```
+
+### 4. Commits Convencionales
+
+| Tipo | Descripción |
+|------|-------------|
+| `feat:` | Nueva funcionalidad |
+| `fix:` | Corrección de bug |
+| `perf:` | Mejora de rendimiento |
+| `docs:` | Cambios en documentación |
+| `chore:` | Tareas de mantenimiento |
+| `refactor:` | Refactorización sin cambio funcional |
+| `test:` | Añadir o modificar tests |
+| `ci:` | Cambios en CI/CD |
+| `security:` | Mejoras de seguridad |
+
+**Formato**: `<tipo>(<alcance>): <descripción>`
+
+```
+feat(auth): add JWT refresh token rotation
+fix(api): handle rate limit exceeded gracefully
+docs(readme): update installation instructions
+```
+
+### 5. Push y Pull Request
+
+```bash
+git push origin feat/nueva-funcionalidad
+gh pr create --title "feat: add amazing feature" --body "## Changes
+- ...
+## Testing
+- ..."
+```
+
+### 5.1 PR Template
+
+```markdown
+## Cambios
+- Descripción de cambios
+
+## Testing
+- [ ] Tests unitarios pasan
+- [ ] Tests de integración pasan
+- [ ] Tests E2E pasan (si aplica)
+
+## Checklist
+- [ ] Tests escritos y pasan
+- [ ] Lint pasa
+- [ ] Typecheck pasa
+- [ ] Documentación actualizada
+- [ ] Changelog actualizado
+- [ ] Sin breaking changes (o documentados)
+```
+
+## Estándares de Código
+
+### Frontend (TypeScript/React)
+
+- **Strict mode**: `tsc --noEmit` sin errores
+- **ESLint**: Config extendida con `eslint-plugin-react-hooks`
+- **Prettier**: Formato consistente
+- **Testing Library**: Tests de comportamiento, no implementación
+- **Componentes**: `forwardRef`, `displayName`, `cn()` para clases
+
+### Backend (Python)
+
+- **Type hints obligatorios**: Sin `Any`, returns explícitos
+- **Dataclasses**: `slots=True`, `frozen=True` para inmutables
+- **Protocol**: Para puertos/adaptadores
+- **Errores como valores**: `Result[T, E]` pattern
+- **Dataclasses**: `slots=True`, `frozen=True`
+
+### Commits
+
+- **Convencionales**: `feat:`, `fix:`, `perf:`, `docs:`, `chore:`
+- **Scope opcional**: `feat(auth):`, `fix(api):`
+- **Cuerpo opcional**: Explicar `why` no `what`
+- **Footer opcional**: `BREAKING CHANGE:`, `Closes #123`
+
+## Testing
+
+### Frontend
+
+- **Unit**: Vitest + Testing Library
+- **Integration**: Mock Service Worker (MSW)
+- **E2E**: Playwright (Chromium, Firefox, WebKit)
+- **Visual**: Playwright + pixelmatch
+- **Performance**: Lighthouse CI budgets
+- **A11y**: axe-core WCAG 2.1 AA
+
+### Backend
+
+- **Unit**: pytest + pytest-mock
+- **Integration**: pytest-asyncio + testcontainers
+- **E2E**: TestClient + base de datos real
+- **Contract**: Pact (opcional)
+
+### Cobertura Mínima
+
+| Métrica | Mínimo |
+|---------|--------|
+| Statements | 80% |
+| Branches | 70% |
+| Functions | 80% |
+| Lines | 80% |
+
+## Accesibilidad
+
+- **WCAG 2.1 AA**: Contraste, focus visible, ARIA
+- **Radix UI**: Primitivas accesibles nativas
+- **Keyboard**: Tab, Enter, Escape, Arrow keys
+- **Screen readers**: Labels, descriptions, live regions
+- **Reduced motion**: `prefers-reduced-motion`
+
+## Seguridad
+
+- **No commitear secretos**: .env en .gitignore
+- **Gitleaks**: En CI, pre-commit hook
+- **Dependabot**: Grouped updates, major ignores
+- **Rate limiting**: En todos los endpoints públicos
+- **Validación**: Zod/Pydantic en todas las entradas
+- **Errores**: Genéricos al cliente, detallados en logs
+
+## CI/CD
+
+### Gates Obligatorios
+
+1. `pnpm lint` / `ruff check`
+2. `pnpm typecheck` / `mypy`
+3. `pnpm test` / `pytest` (coverage gates)
+4. `pnpm build` / `uv build`
+5. Security scan (gitleaks, dependabot)
+
+### Branch Protection
+
+- `main` protegida
+- Required status checks: build, typecheck, test, lint
+- 1 approval mínimo
+- Linear history
+- Admin enforcement
+
+## Documentación
+
+- **README**: Propósito, instalación, uso, licencia
+- **CHANGELOG**: Keep a Changelog format
+- **ADR**: Architecture Decision Records para decisiones importantes
+- **API docs**: OpenAPI/Swagger auto-generado
+- **Componentes**: Storybook + docs en repo
+
+## Licencia
+
+- **Código**: MIT
+- **Documentación**: CC BY 4.0
+- **Assets**: Licencias propias (ver CREDITS.md)
+
+## Código de Conducta
+
+Seguimos [Contributor Covenant 2.1](CODE_OF_CONDUCT.md).
+
+## Contacto
+
+- **Issues**: GitHub Issues
+- **Discusiones**: GitHub Discussions
+- **Email**: belentani7studio@proton.me
+
+---
+
+Gracias por contribuir al ecosistema Belentani 💚
