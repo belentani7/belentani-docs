@@ -1,0 +1,249 @@
+# Guía de Accesibilidad
+
+## Estándar: WCAG 2.1 AA
+
+Todos los proyectos del ecosistema deben cumplir **WCAG 2.1 Level AA** como mínimo.
+
+## Principios POUR
+
+### Perceptible
+
+- **Texto alternativo**: Todas las imágenes no decorativas tienen `alt`
+- **Contraste**: Mínimo 4.5:1 (texto normal), 3:1 (texto grande 18px+/bold)
+- **Escalable**: Texto redimensionable al 200% sin pérdida de funcionalidad
+- **No solo color**: Información no transmitida solo por color
+
+### Operable
+
+- **Teclado**: Toda funcionalidad accesible por teclado
+- **Sin trampas**: Foco no queda atrapado en componentes
+- **Tiempo suficiente**: Sin límites de tiempo arbitrarios
+- **Navegación**: Múltiples formas de encontrar contenido
+
+### Comprensible
+
+- **Idioma**: `lang` en `html`, cambios de idioma marcados
+- **Predecible**: Navegación consistente, sin cambios inesperados
+- **Ayuda**: Etiquetas, instrucciones, validación clara
+
+### Robusto
+
+- **HTML válido**: Semántico, bien formado
+- **ARIA**: Solo cuando HTML nativo no basta
+- **Compatibilidad**: Funciona en tecnologías asistivas actuales y futuras
+
+## Checklist por Componente
+
+### Botones
+
+- [ ] `<button>` nativo (no `<div onClick>`)
+- [ ] Texto descriptivo o `aria-label`
+- [ ] `disabled` para estado deshabilitado
+- [ ] Focus visible (`outline` o `ring`)
+- [ ] Contraste 4.5:1 mínimo
+
+### Formularios
+
+- [ ] `<label>` asociado a cada `<input>` (`for`/`id`)
+- [ ] `required` y `aria-required` consistentes
+- [ ] `aria-invalid` + mensaje de error vinculado (`aria-describedby`)
+- [ ] `autocomplete` apropiado (`email`, `tel`, `new-password`)
+- [ ] Mensajes de error anunciados (`role="alert"` o `aria-live="polite"`)
+
+### Navegación
+
+- [ ] `<nav>` con `aria-label` descriptivo
+- [ ] Estado actual: `aria-current="page"`
+- [ ] Submenús: `aria-expanded`, `aria-controls`
+- [ ] Skip link: `<a href="#main" class="skip-link">Saltar al contenido</a>`
+
+### Modales/Dialogs
+
+- [ ] `<dialog>` nativo o Radix Dialog
+- [ ] `aria-modal="true"`, `role="dialog"`
+- [ ] Foco atrapado (`focus-trap`)
+- [ ] `Escape` cierra, foco retorna al trigger
+- [ ] `aria-labelledby` y `aria-describedby`
+
+### Tablas
+
+- [ ] `<table>` con `<caption>`
+- [ ] `<th scope="col|row">` para headers
+- [ ] `scope` en celdas de encabezado
+- [ ] Responsive: scroll horizontal o cards en móvil
+
+### Imágenes
+
+- [ ] `alt` descriptivo (contexto + función)
+- [ ] Decorativas: `alt=""` o `role="presentation"`
+- [ ] SVG: `role="img"` + `<title>` + `<desc>`
+- [ ] `loading="lazy"` para below-the-fold
+
+## Testing de Accesibilidad
+
+### Automatizado (CI)
+
+```bash
+# axe-core en Playwright
+pnpm test:a11y
+
+# Lighthouse CI
+pnpm lighthouse
+```
+
+```javascript
+// playwright.config.ts
+import { defineConfig } from '@playwright/test';
+
+export default defineConfig({
+  projects: [
+    { name: 'chromium', use: { ...devices['Desktop Chrome'] } },
+    { name: 'firefox', use: { ...devices['Desktop Firefox'] } },
+    { name: 'webkit', use: { ...devices['Desktop Safari'] } },
+  ],
+});
+```
+
+```typescript
+// tests/a11y.spec.ts
+import { test, expect } from '@playwright/test';
+import AxeBuilder from '@axe-core/playwright';
+
+test('homepage has no accessibility violations', async ({ page }) => {
+  await page.goto('/');
+  const results = await new AxeBuilder({ page }).analyze();
+  expect(results.violations).toHaveLength(0);
+});
+```
+
+### Manual
+
+- [ ] Navegación solo teclado (Tab, Shift+Tab, Enter, Escape, Arrows)
+- [ ] Screen reader: NVDA (Windows), VoiceOver (Mac), Orca (Linux)
+- [ ] Zoom 200% (Ctrl++ / Cmd++)
+- [ ] High contrast mode (Windows) / Increase contrast (Mac)
+- [ ] Reduced motion (OS setting)
+
+## Tokens de Diseño Accesibles
+
+### Contraste (Verde Positivo)
+
+| Token | Sobre bg-deep | Sobre bg-surface | Uso |
+|-------|---------------|------------------|-----|
+| text-primary (#E9FFF3) | 18:1 ✅ | 15:1 ✅ | Texto principal |
+| text-secondary (#A7D9B8) | 7:1 ✅ | 6:1 ✅ | Texto secundario |
+| brand-primary (#39D98A) | 4.5:1 ✅ | 3.5:1 ⚠️ | CTAs (large text) |
+| error (#FF7D7D) | 4.5:1 ✅ | 3.5:1 ⚠️ | Errores (large text) |
+
+> **Nota**: brand-primary y error solo para texto grande (18px+ / 14px bold) sobre superficies oscuras.
+
+### Focus Visible
+
+```css
+.belentani-focus-visible:focus-visible {
+  outline: none;
+  ring: 3px solid var(--color-brand-primary);
+  ring-offset: 2px;
+  ring-offset-color: var(--color-bg-deep);
+}
+```
+
+### Reduced Motion
+
+```css
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+```
+
+## Testing con Usuarios Reales
+
+### Reclutamiento
+
+- Mínimo 5 usuarios con discapacidades diversas
+- Screen reader users (blind/low vision)
+- Motor impairments (keyboard only)
+- Cognitive impairments
+- Color blindness
+
+### Tareas de Test
+
+1. Navegar homepage → encontrar info clave
+2. Completar formulario complejo (registro, checkout)
+3. Navegar menús, modales, tabs
+4. Manejar errores de validación
+4. Usar search, filtros, paginación
+
+### Métricas
+
+- **Task success rate**: % tareas completadas
+- **Time on task**: Tiempo promedio
+- **Error rate**: Errores por tarea
+- **Satisfaction**: SUS score o similar
+
+## Herramientas Recomendadas
+
+### Automatizadas
+
+| Herramienta | Uso | Integración |
+|-------------|-----|-------------|
+| axe-core | Core testing | Playwright, Cypress, Jest |
+| Lighthouse CI | Performance + a11y | GitHub Actions |
+| pa11y | CLI testing | CI/CD pipeline |
+| eslint-plugin-jsx-a11y | Linting | Pre-commit, CI |
+
+### Manuales
+
+| Herramienta | Plataforma | Uso |
+|-------------|------------|-----|
+| NVDA | Windows | Screen reader gratuito |
+| VoiceOver | macOS/iOS | Screen reader nativo |
+| Orca | Linux | Screen reader GNOME |
+| WAVE | Web | Evaluación visual |
+| axe DevTools | Browser extension | Debug rápido |
+| Color Oracle | Cross-platform | Simulador daltonismo |
+
+### Extensiones VS Code
+
+- **axe Accessibility Linter**: Linting en editor
+- **Webhint**: Hinting accesibilidad, performance, security
+
+## Documentación de Accesibilidad
+
+### Accessibility Statement (Requerido)
+
+Debe incluir:
+- Nivel de conformidad (WCAG 2.1 AA)
+- Fecha de última evaluación
+- Contacto para reportar barreras
+- Limitaciones conocidas
+- Tecnologías asistivas probadas
+
+### Ejemplo
+
+> **Declaración de Accesibilidad**
+> 
+> Nos comprometemos a hacer nuestra plataforma accesible conforme a WCAG 2.1 Level AA. Última evaluación: 2026-10-15.
+> 
+> **Limitaciones conocidas**: 
+> - Gráficos complejos sin alternativa textual completa (en progreso)
+> - Algunos PDFs heredados no etiquetados
+> 
+> **Contacto**: accessibility@belentani.com
+> 
+> **Tecnologías probadas**: NVDA 2024.1, VoiceOver macOS 14, Chrome 118, Firefox 119
+
+## Recursos
+
+- [WCAG 2.1 Guidelines](https://www.w3.org/WAI/WCAG21/quickref/)
+- [WAI-ARIA Practices](https://www.w3.org/WAI/ARIA/apg/)
+- [axe-core](https://github.com/dequelabs/axe-core)
+- [WebAIM Checklist](https://webaim.org/standards/wcag/checklist/)
+- [Inclusive Components](https://inclusive-components.design/)
+- [A11y Project](https://www.a11yproject.com/)
+- [Inclusive Design Principles](https://inclusivedesignprinciples.org/)
