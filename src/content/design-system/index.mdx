@@ -1,0 +1,239 @@
+# Design System — @belentani/ui
+
+## Instalación
+
+```bash
+pnpm add @belentani/ui
+# o
+npm install @belentani/ui
+```
+
+Requiere peer dependencies:
+```bash
+pnpm add react react-dom @radix-ui/react-slot class-variance-authority clsx tailwind-merge tailwindcss-animate lucide-react
+```
+
+## Tokens de Diseño
+
+### Colores — Verde Positivo
+
+| Token | Valor | Uso |
+|-------|-------|-----|
+| `--color-bg-deep` | #071A14 | Fondo principal |
+| `--color-bg-surface` | #0D2A20 | Cards, superficies |
+| `--color-bg-elevated` | #143D2E | Modales, dropdowns |
+| `--color-brand-primary` | #39D98A | CTAs, links, focus |
+| `--color-brand-lime` | #A7F36C | Success, acentos |
+| `--color-brand-mint` | #B7F7D4 | Hover, bordes sutiles |
+| `--color-text-primary` | #E9FFF3 | Texto principal |
+| `--color-text-secondary` | #A7D9B8 | Texto secundario |
+| `--color-error` | #FF7D7D | Errores |
+| `--color-warning` | #FDE68A | Advertencias |
+| `--color-info` | #7DD3FC | Info |
+
+### Importación CSS
+
+```css
+@import '@belentani/ui/tokens.css';
+```
+
+## Componentes
+
+### Button
+
+```tsx
+import { Button } from '@belentani/ui';
+
+<Button variant="default" size="md">Default</Button>
+<Button variant="success" loading>Guardando...</Button>
+<Button variant="error" size="lg">Eliminar</Button>
+<Button variant="ghost" asChild><a href="/link">Link</a></Button>
+<Button variant="outline" size="sm">Outline</Button>
+```
+
+**Variants**: default, destructive, outline, secondary, ghost, link, success
+**Sizes**: sm, default, lg, xl, icon
+
+### Card
+
+```tsx
+import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@belentani/ui';
+
+<Card variant="default" interactive>
+  <CardHeader>
+    <CardTitle>Título</CardTitle>
+    <CardDescription>Descripción opcional</CardDescription>
+  </CardHeader>
+  <CardContent>Contenido principal</CardContent>
+  <CardFooter>Acciones</CardFooter>
+</Card>
+```
+
+**Variants**: default, elevated, outlined, glass, gradient
+
+### Input
+
+```tsx
+import { Input } from '@belentani/ui';
+
+<Input
+  label="Email"
+  type="email"
+  placeholder="you@example.com"
+  error="Email inválido"
+  hint="Usaremos este email para notificaciones"
+  leadingIcon={<MailIcon />}
+/>
+```
+
+### Toast
+
+```tsx
+import { Toast } from '@belentani/ui';
+
+<Toast
+  variant="success"
+  title="Guardado"
+  description="Los cambios se han guardado correctamente"
+  action={<Button size="sm">Deshacer</Button>}
+  duration={5000}
+  onClose={() => {}}
+/>
+```
+
+**Variants**: default, success, error, warning, info
+
+### Badge
+
+```tsx
+import { Badge } from '@belentani/ui';
+
+<Badge variant="success" dot>En línea</Badge>
+<Badge variant="warning" size="lg">Pendiente</Badge>
+<Badge variant="brand">Nuevo</Badge>
+<Badge variant="error" size="sm">Error</Badge>
+```
+
+**Variants**: default, success, error, warning, info, brand
+**Sizes**: sm, md, lg
+
+### Avatar
+
+```tsx
+import { Avatar } from '@belentani/ui';
+
+<Avatar src="/avatar.jpg" fallback="JB" status="online" size="lg" />
+<Avatar fallback="AB" status="away" size="md" shape="square" />
+<Avatar fallback="CD" size="xl" />
+```
+
+**Sizes**: xs, sm, md, lg, xl, 2xl
+**Shapes**: circle, square
+**Statuses**: online, offline, busy, away
+
+### Select
+
+```tsx
+import { Select, SelectTrigger, SelectContent, SelectItem, SelectLabel } from '@belentani/ui';
+
+<Select defaultValue="es">
+  <SelectTrigger>
+    <SelectValue placeholder="Selecciona idioma" />
+  </SelectTrigger>
+  <SelectContent>
+    <SelectLabel>Idiomas</SelectLabel>
+    <SelectItem value="es">Español</SelectItem>
+    <SelectItem value="en">English</SelectItem>
+    <SelectItem value="pt">Português</SelectItem>
+    <SelectItem value="fr" disabled>Français (próximamente)</SelectItem>
+  </SelectContent>
+</Select>
+```
+
+### Dialog
+
+```tsx
+import { Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@belentani/ui';
+
+<Dialog>
+  <DialogTrigger asChild>
+    <Button variant="secondary">Abrir diálogo</Button>
+  </DialogTrigger>
+  <DialogContent>
+    <DialogHeader>
+      <DialogTitle>Confirmar acción</DialogTitle>
+      <DialogDescription>¿Estás seguro de que quieres continuar?</DialogDescription>
+    </DialogHeader>
+    <DialogFooter>
+      <Button variant="ghost" onClick={() => setOpen(false)}>Cancelar</Button>
+      <Button onClick={confirmAction}>Confirmar</Button>
+    </DialogFooter>
+  </DialogContent>
+</Dialog>
+```
+
+### DropdownMenu
+
+```tsx
+import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator } from '@belentani/ui';
+
+<DropdownMenu>
+  <DropdownMenuTrigger asChild>
+    <Button variant="ghost">Opciones</Button>
+  </DropdownMenuTrigger>
+  <DropdownMenuContent>
+    <DropdownMenuLabel>Acciones</DropdownMenuLabel>
+    <DropdownMenuItem onClick={edit}>Editar</DropdownMenuItem>
+    <DropdownMenuItem onClick={duplicate}>Duplicar</DropdownMenuItem>
+    <DropdownMenuSeparator />
+    <DropdownMenuItem onClick={delete} variant="destructive">Eliminar</DropdownMenuItem>
+  </DropdownMenuContent>
+</DropdownMenu>
+```
+
+## Tailwind Config
+
+```js
+// tailwind.config.ts
+import { belentaniPreset } from '@belentani/ui/tailwind-preset';
+
+export default {
+  presets: [belentaniPreset],
+  content: [
+    './src/**/*.{ts,tsx}',
+    '../../node_modules/@belentani/ui/**/*.{ts,tsx}',
+  ],
+};
+```
+
+## Storybook
+
+```bash
+pnpm storybook  # Desarrollo
+pnpm build-storybook  # Build estático
+```
+
+## Testing
+
+```bash
+pnpm test  # Vitest + Testing Library
+pnpm test:watch  # Watch mode
+```
+
+## Accesibilidad
+
+- **WCAG 2.1 AA**: Contraste, focus visible, ARIA labels
+- **Radix UI**: Primitivas accesibles nativas
+- **Keyboard navigation**: Tab, Enter, Escape, Arrow keys
+- **Screen readers**: Labels, descriptions, live regions
+
+## Contribuir
+
+1. Fork → Feature branch
+2. Añadir tests en `src/components/__tests__/`
+3. `pnpm test && pnpm lint && pnpm typecheck`
+4. PR → Review → Merge
+
+## Licencia
+
+MIT — Ver [LICENSE](LICENSE).
