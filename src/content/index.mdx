@@ -1,0 +1,148 @@
+---
+title: "Belentani Docs"
+description: "Unified documentation for the Belentani ecosystem — art, education, tools, and infrastructure"
+---
+
+# Bienvenidos a Belentani Docs
+
+**Belentani** es un ecosistema de proyectos open source que intersectan **arte 3D procedural**, **educación gratuita para migrantes**, **herramientas IA éticas** e **infraestructura reproducible".
+
+## Proyectos Flagship
+
+<div class="project-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem; margin: 2rem 0;">
+
+<div class="project-card">
+<h3>Manos Abiertas</h3>
+<p>Plataforma educativa gratuita: cursos de IA y Office, creador de CV, guías de derechos para migrantes.</p>
+<div class="tech-stack">
+<span class="tech-tag">Next.js 16</span>
+<span class="tech-tag">Prisma</span>
+<span class="tech-tag">Tailwind 4</span>
+<span class="tech-tag">Radix UI</span>
+</div>
+</div>
+
+<div class="project-card">
+<h3>LinguaForge</h3>
+<p>Plataforma de idiomas con progresión CEFR, repetición espaciada SRS, contenido con procedencia verificable.</p>
+<div class="tech-stack">
+<span class="tech-tag">Vite</span>
+<span class="tech-tag">tRPC 11</span>
+<span class="tech-tag">Drizzle</span>
+<span class="tech-tag">MySQL/TiDB</span>
+</div>
+</div>
+
+<div class="project-card">
+<h3>Belentani.es</h3>
+<p>Hub artístico 3D interactivo: universo narrativo Judas Era con Three.js, R3F, GSAP, post-processing.</p>
+<div class="tech-stack">
+<span class="tech-tag">Next.js 14</span>
+<span class="tech-tag">R3F</span>
+<span class="tech-tag">GSAP</span>
+<span class="tech-tag">Post-processing</span>
+</div>
+</div>
+
+<div class="project-card">
+<h3>Cruzando el Charco</h3>
+<p>Guía comunitaria multilingüe para personas LGTBIQ+ migrantes en Barcelona/Sitges. 11 idiomas, PWA offline-first.</p>
+<div class="tech-stack">
+<span class="tech-tag">Static HTML/JS</span>
+<span class="tech-tag">Playwright</span>
+<span class="tech-tag">axe-core</span>
+</div>
+</div>
+
+<div class="project-card">
+<h3>Secure T</h3>
+<p>Campus de ciberseguridad e IA: 4 programas x 20 semanas, gratuito, offline-first, pytest + vitest + gitleaks.</p>
+<div class="tech-stack">
+<span class="tech-tag">Static + SPA</span>
+<span class="tech-tag">pytest</span>
+<span class="tech-tag">vitest</span>
+</div>
+</div>
+
+<div class="project-card">
+<h3>Open School</h3>
+<p>Instituto digital universal offline-first: catalogo, progreso anonimo, tutor orientador, SW, Drizzle schema.</p>
+<div class="tech-stack">
+<span class="tech-tag">React 19</span>
+<span class="tech-tag">Vite</span>
+<span class="tech-tag">Wouter</span>
+<span class="tech-tag">Drizzle</span>
+</div>
+</div>
+
+<div class="project-card">
+<h3>Judas Experience</h3>
+<p>Experiencia visual procedural Three.js: planeta vivo, diamante IOR 2.417, llave dorada PBR, maquina organica 432Hz.</p>
+<div class="tech-stack">
+<span class="tech-tag">Three.js 0.185</span>
+<span class="tech-tag">ES Modules</span>
+<span class="tech-tag">GLSL</span>
+<span class="tech-tag">Playwright</span>
+</div>
+</div>
+
+<div class="project-card">
+<h3>Belentani.cv-ai</h3>
+<p>Generador de CV con IA: adapta curriculums a ofertas, validación Zod, rate-limiting, Pydantic backend ready.</p>
+<div class="tech-stack">
+<span class="tech-tag">Next.js 16</span>
+<span class="tech-tag">Prisma</span>
+<span class="tech-tag">Zod</span>
+<span class="tech-tag">Upstash</span>
+</div>
+</div>
+
+</div>
+
+## Infraestructura Compartida
+
+| Herramienta | Descripción | Repositorio |
+|-------------|-------------|-------------|
+| @belentani/ui | Design System: tokens verde positivo, Button, Card, Input, Toast, Badge, Avatar | belentani-design-system |
+| Python Template | FastAPI + Pydantic + SQLModel + uv + Ruff + pytest + OTEL canonico | belentani-python-template |
+| MCP Servers | Servidores MCP para auditoría, despliegue, datos | Proximamente |
+
+## Navegacion Rapida
+
+- **Arquitectura** -> [Architecture](/architecture/)
+- **Design System** -> [Tokens](/design-system/tokens/) | [Componentes](/design-system/components/)
+- **Python Backend** -> [Template](/python/template/) | [Clean Architecture](/python/clean-architecture/)
+- **API Reference** -> [Manos Abiertas](/api/manos-abiertas/) | [LinguaForge](/api/linguaforge/) | [Belentani.cv-ai](/api/belentani-cv-ai/)
+- **Guias** -> [Contribuir](/guides/contributing/) | [Despliegue](/guides/deployment/) | [Seguridad](/guides/security/)
+
+## Estado del Ecosistema
+
+| Proyecto | CI | Deploy | Tests | A11y | Docs |
+|----------|----|--------|-------|------|------|
+| Manos Abiertas | ✅ | ✅ Vercel | 🟡 | 🟡 | 🟢 |
+| LinguaForge | ✅ | ✅ Vercel | 🟢 | 🟢 | 🟢 |
+| Belentani.es | 🟡 | ✅ Vercel | 🟡 | 🟡 | 🟡 |
+| Cruzando el Charco | 🟢 | ❌ Pages | 🟢 | 🟢 | 🟢 |
+| Secure T | 🟡 | 🟡 Pages/Netlify | 🟢 | 🟢 | 🟢 |
+| Open School | 🟡 | ✅ Vercel | 🟡 | 🟡 | 🟢 |
+| Judas Experience | 🟡 | ✅ Vercel | 🟡 | 🟢 | 🟢 |
+| Belentani.cv-ai | 🔴 | ✅ Vercel | 🟡 | 🟡 | 🟡 |
+
+> **Leyenda**: ✅ Verde | 🟡 En progreso | 🔴 Requiere atencion | ❌ No configurado
+
+## Contribuir
+
+1. Lee la [Guía de Contribucion](/guides/contributing/)
+2. Revisa los [Principios](/principles/) del ecosistema
+3. Usa el [Design System](/design-system/) para nuevos componentes
+4. Sigue el [Template Python](/python/template/) para backends
+5. Ejecuta pnpm lint && pnpm typecheck && pnpm test antes de PR
+
+## Licencia
+
+Codigo: **MIT** (salvo indicacion contraria).
+Contenido, datasets, modelos: licencias propias — ver [CREDITS.md](/credits/) por proyecto.
+
+---
+
+Construido con corazon por [Pedro Belentani](https://github.com/belentani7) — NOIACORE
