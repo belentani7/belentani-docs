@@ -1,0 +1,396 @@
+# Python Backend Template — Guía de Inicio Rápido
+
+## Stack Tecnológico
+
+| Capa | Tecnología | Versión |
+|------|------------|---------|
+| **Framework** | FastAPI | 0.115+ |
+| **Validación** | Pydantic v2 | 2.10+ |
+| **ORM** | SQLModel | 0.0.22+ |
+| **DB Driver** | asyncpg | 0.29+ |
+| **Cache/Queue** | Redis | 5.2+ |
+| **Auth** | python-jose + passlib | 3.3+ / 1.7+ |
+| **Logging** | structlog + python-json-logger | 24.1+ / 2.0+ |
+| **Gestor Paquetes** | uv | latest |
+| **Lint/Format** | Ruff | 0.8+ |
+| **Typecheck** | mypy | 1.11+ |
+| **Tests** | pytest + pytest-asyncio | 8.3+ / 0.23+ |
+| **Observabilidad** | OpenTelemetry + Sentry (opcional) | 1.27+ / 2.1+ |
+
+## Inicio Rápido
+
+```bash
+# 1. Instalar uv (gestor ultra-rápido)
+curl -LsSf https://astral.sh/uv/install.sh | sh
+
+# 2. Crear proyecto desde template
+uvx cookiecutter gh:belentani7/belentani-python-template
+
+# 3. Entrar al proyecto
+cd mi-proyecto
+
+# 4. Instalar dependencias (incluye dev)
+uv sync --all-extras
+
+# 5. Configurar variables de entorno
+cp .env.example .env
+# Editar .env con tus valores
+
+# 6. Ejecutar en desarrollo
+uv run uvicorn mi_proyecto.main:app --reload
+```
+
+## Estructura del Proyecto
+
+```
+src/
+├── mi_proyecto/
+│   ├── domain/                 # Núcleo: Entidades, VOs, Events, Ports
+│   │   ├── entities.py         # Entity, EntityId, RepositoryPort, DomainEvent
+│   │   └── value_objects.py    # Value Objects personalizados
+│   ├── application/            # Casos de uso, DTOs, Services
+│   │   └── use_cases.py        # UseCase, UseCaseInput/Output, EventPublisher
+│   ├── infrastructure/         # Adaptadores: DB, HTTP, Queue, Auth
+│   │   ├── persistence/        # SQLModel repositories
+│   │   │   └── sqlmodel_repository.py
+│   │   ├── http/               # Cliente HTTP externo
+│   │   └── queue/              # Celery/RQ workers
+│   ├── interfaces/             # HTTP Routes, CLI, GraphQL
+│   │   └── api/
+│   │       ├── v1.py           # FastAPI routers
+│   │       └── middleware/     # Auth, Rate Limit, CORS
+│   │           ├── auth.py     # JWT + scopes
+│   │           └── rate_limit.py
+│   ├── config/
+│   │   └── settings.py         # Pydantic Settings (env-based)
+│   └── main.py                 # App factory + lifespan + middleware
+├── tests/
+│   ├── unit/                   # Tests rápidos, aislados
+│   │   ├── domain/
+│   │   ├── application/
+│   │   └── interfaces/api/middleware/
+│   ├── integration/            # Requieren DB/Redis reales
+│   ├── e2e/                    # Full stack
+│   └── conftest.py             # Fixtures compartidas
+└── scripts/
+    └── dev.py                  # Helpers desarrollo
+```
+
+## Arquitectura Limpia (Clean Architecture)
+
+### Capas y Responsabilidades
+
+| Capa | Responsabilidad | Dependencias |
+|------|-----------------|--------------|
+| **Domain** | Entidades, VOs, Events, Ports | Solo stdlib |
+| **Application** | Use Cases, DTOs, EventPublisher | Domain |
+| **Infrastructure** | DB, HTTP, Queue, Auth adapters | Domain, Application, libs externas |
+| **Interfaces** | HTTP Routes, CLI | Application, Infrastructure |
+
+### Flujo de Dependencias
+
+```
+Interfaces → Application → Domain ← Infrastructure
+```
+
+**Regla de oro**: Las capas internas nunca dependen de las externas.
+
+## Principios de Diseño
+
+### 1. Núcleo Independiente
+El dominio usa solo la biblioteca estándar de Python. Sin FastAPI, SQLModel, Pydantic, etc.
+
+### 2. Adaptadores Intercambiables
+Memoria, PostgreSQL, SQLite, FastAPI, CLI se conectan sin tocar el dominio.
+
+### 3. Contratos Explícitos
+Puertos definidos con `Protocol` — implementaciones sustituibles en tests/producción.
+
+### 4. Fallos Controlados
+API devuelve JSON consistente, no expone excepciones internas. Errores como valores (`Result[T, E]`).
+
+## Configuración (Pydantic Settings)
+
+```python
+# src/mi_proyecto/config/settings.py
+from pydantic_settings import BaseSettings, SettingsConfigDict
+from pydantic import PostgresDsn, RedisDsn
+
+class Settings(BaseSettings):
+    model_config = SettingsConfigDict(env_file=".env", case_sensitive=False)
+    
+    app_name: str = "mi-proyecto"
+    environment: str = "development"
+    debug: bool = True
+    
+    database_url: PostgresDsn
+    redis_url: RedisDsn
+    
+    secret_key: str
+    algorithm: str = "HS256"
+    access_token_expire_minutes: int = 30
+
+settings = Settings()  # Cached via @lru_cache
+```
+
+### Variables de Entorno Requeridas
+
+```env
+APP_NAME=mi-proyecto
+ENVIRONMENT=development
+DEBUG=true
+
+DATABASE_URL=postgresql://user:pass@localhost:5432/mi_proyecto
+REDIS_URL=redis://localhost:6379/0
+
+SECRET_KEY=tu-clave-secreta-muy-larga-y-segura
+ALGORITHM=HS256
+ACCESS_TOKEN_EXPIRE_MINUTES=30
+
+# Opcional
+SENTRY_DSN=https://xxx@sentry.io/xxx
+OTEL_EXPORTER_OTLP_ENDPOINT=http://localhost:4317
+```
+
+## Autenticación JWT
+
+### Crear Token
+
+```python
+from mi_proyecto.interfaces.api.middleware.auth import create_access_token
+
+token = create_access_token({
+    "sub": "user-123",
+    "scopes": ["read", "write"]
+})
+```
+
+### Proteger Endpoint
+
+```python
+from fastapi import Depends
+from mi_proyecto.interfaces.api.middleware.auth import get_current_user, CurrentUser
+
+@app.get("/protected")
+async def protected(user: CurrentUser = Depends(get_current_user)):
+    return {"user_id": user.id, "scopes": user.scopes}
+```
+
+### Requerir Scopes
+
+```python
+from mi_proyecto.interfaces.api.middleware.auth import require_scopes
+
+@app.get("/admin", dependencies=[Depends(require_scopes("admin"))])
+async def admin_only():
+    return {"message": "Admin access"}
+```
+
+## Rate Limiting
+
+```python
+from fastapi import FastAPI
+from mi_proyecto.interfaces.api.middleware.rate_limit import RateLimitMiddleware
+
+app = FastAPI()
+app.add_middleware(
+    RateLimitMiddleware,
+    requests_per_minute=60,
+    requests_per_hour=1000,
+    excluded_paths=["/health", "/docs", "/redoc"]
+)
+```
+
+### Headers de Respuesta
+
+- `Retry-After`: Segundos hasta reset
+- `429 Too Many Requests`: Cuando se excede límite
+
+## Base de Datos (SQLModel)
+
+### Repositorio Genérico
+
+```python
+from mi_proyecto.infrastructure.persistence.sqlmodel_repository import SQLModelRepository
+from mi_proyecto.domain.entities import EntityId
+
+class UserRepository(SQLModelRepository[User, UserModel]):
+    def __init__(self, session: Session):
+        super().__init__(session, UserModel, UserMapper())
+
+# Uso
+repo = UserRepository(session)
+user = await repo.get(EntityId.generate())
+await repo.add(user)
+```
+
+### Migraciones
+
+```bash
+# Generar migración
+uv run alembic revision --autogenerate -m "add users table"
+
+# Aplicar migraciones
+uv run alembic upgrade head
+
+# Rollback
+uv run alembic downgrade -1
+```
+
+## Testing
+
+### Estructura
+
+```
+tests/
+├── unit/                    # Rápidos, aislados, mocks
+│   ├── domain/test_entities.py
+│   ├── application/
+│   └── interfaces/api/middleware/
+│       ├── test_auth.py
+│       └── test_rate_limit.py
+├── integration/             # DB/Redis reales
+├── e2e/                     # Full stack
+└── conftest.py              # Fixtures compartidas
+```
+
+### Ejecutar Tests
+
+```bash
+# Todos los tests con coverage
+uv run pytest
+
+# Solo unit tests
+uv run pytest tests/unit/
+
+# Con coverage HTML
+uv run pytest --cov-report=html
+
+# Verbose
+uv run pytest -v
+```
+
+### Fixtures Comunes (conftest.py)
+
+```python
+@pytest.fixture
+def mock_repository():
+    repo = AsyncMock(spec=RepositoryPort)
+    repo.add = AsyncMock()
+    repo.get = AsyncMock(return_value=None)
+    repo.list = AsyncMock(return_value=[])
+    return repo
+
+@pytest.fixture
+def sample_entity_id():
+    return EntityId.generate()
+```
+
+## Linting & Formatting
+
+```bash
+# Ruff check + fix
+uv run ruff check . --fix
+
+# Ruff format
+uv run ruff format .
+
+# MyPy typecheck
+uv run mypy src/
+
+# Pre-commit (instala hooks)
+uv run pre-commit install
+uv run pre-commit run --all-files
+```
+
+## Despliegue
+
+### Docker
+
+```dockerfile
+FROM python:3.12-slim
+WORKDIR /app
+COPY pyproject.toml uv.lock ./
+RUN uv sync --frozen --no-dev
+COPY src/ ./src/
+EXPOSE 8000
+CMD ["uv", "run", "uvicorn", "mi_proyecto.main:app", "--host", "0.0.0.0", "--port", "8000"]
+```
+
+### Variables de Producción
+
+```env
+ENVIRONMENT=production
+DEBUG=false
+LOG_LEVEL=INFO
+DATABASE_URL=postgresql://user:pass@prod-db:5432/mi_proyecto
+REDIS_URL=redis://prod-redis:6379/0
+SECRET_KEY=clave-super-segura-produccion
+SENTRY_DSN=https://xxx@sentry.io/xxx
+OTEL_EXPORTER_OTLP_ENDPOINT=http://otel-collector:4317
+```
+
+### Health Checks
+
+```bash
+curl http://localhost:8000/health
+# {"status": "ok", "service": "mi-proyecto", "environment": "production"}
+
+curl http://localhost:8000/health/ready
+# {"ready": true, "checks": {"database": true, "redis": true}}
+```
+
+## Observabilidad
+
+### Logging Estructurado
+
+```python
+import structlog
+
+logger = structlog.get_logger()
+
+logger.info("user_created", user_id=user.id, email=user.email)
+logger.error("db_connection_failed", error=str(e), retry_count=3)
+```
+
+### OpenTelemetry (Opcional)
+
+```bash
+uv add opentelemetry-instrumentation-fastapi opentelemetry-exporter-otlp
+```
+
+```python
+# En main.py
+from opentelemetry.instrumentation.fastapi import FastAPIInstrumentor
+
+FastAPIInstrumentor.instrument_app(app)
+```
+
+### Sentry (Opcional)
+
+```bash
+uv add sentry-sdk[fastapi]
+```
+
+```python
+import sentry_sdk
+from sentry_sdk.integrations.fastapi import FastApiIntegration
+
+sentry_sdk.init(
+    dsn=settings.sentry_dsn,
+    integrations=[FastApiIntegration()],
+    traces_sample_rate=0.1,
+)
+```
+
+## Convenciones de Código
+
+- **Type hints obligatorios** — sin `Any`, returns explícitos
+- **Dataclasses con `slots=True`** — rendimiento + inmutabilidad
+- **Errores como valores** — `Result[T, E]` pattern
+- **Commits convencionales** — `feat:`, `fix:`, `perf:`, `docs:`, `chore:`
+- **Tests FIRST** — `pytest` antes de implementar (TDD)
+
+## Licencia
+
+MIT — Úsalo libremente en proyectos institucionales.
